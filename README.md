@@ -1,6 +1,7 @@
 # litemall
 
 电商。
+开发基础摘自：https://github.com/linlinjava/litemall
 
 litemall = Spring Boot后端 + Vue管理员前端 + 微信小程序用户前端 + Vue用户移动端
 
