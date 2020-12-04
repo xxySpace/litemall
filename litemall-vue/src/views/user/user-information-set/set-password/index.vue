@@ -1,30 +1,15 @@
 <template>
   <div>
     <van-cell-group>
+      <van-field label="新密码" v-model="password" type="password" placeholder="请输入新密码" />
+      <van-field label="确认密码" v-model="password2" type="password" placeholder="请确认新密码" />
 
-      <van-field
-        label="新密码"
-        v-model="password"
-        type="password"
-        placeholder="请输入新密码"
-      />
-
-			<van-field
-				label="验证码"
-				v-model="code"
-				@click-icon="getCode"
-				placeholder="请输入验证码">
-
-				<span slot="icon"
-					class="verifi_code red"
-					:class="{verifi_code_counting: counting}"
-					@click="getCode">
-					<countdown v-if="counting" :time="60000" @end="countdownend">
-					  <template slot-scope="props">{{ +props.seconds || 60 }}秒后获取</template>
-					</countdown>
-					<span v-else>获取验证码</span>
-				</span>
-			</van-field>
+      <van-field label="验证码" v-model="code" @click-icon="getCode" placeholder="请输入验证码">
+        <template #button>
+          <van-button v-if="!cutDownTime" size="small" type="primary" @click="getCode">发送验证码</van-button>
+          <van-button v-if="cutDownTime" class="cutDownTime" size="small" type="primary">{{cutDownTime}}s后再试</van-button>
+        </template>
+      </van-field>
     </van-cell-group>
 
     <div class="bottom_btn">
@@ -42,10 +27,14 @@ import { Field } from 'vant';
 export default {
   data: () => ({
     password: '',
+    password2: '',
     mobile: '',
     code: '',
-    counting: false
+    cutDownTime: 0
   }),
+  mounted: function() {
+    this.mobile = this.$route.query.mobile;
+  },
 
   methods: {
     modifypassword() {
@@ -55,35 +44,54 @@ export default {
           mobile: this.mobile,
           code: this.code
         })
-        .then(() => {
-          this.$dialog.alert({ message: '保存成功, 请重新登录.' })
-          authLogout();
-        });
+          .then(() => {
+            this.$dialog.alert({ message: '保存成功, 请重新登录.' });
+            logout();
+          })
+          .catch(error => {
+            this.$toast.fail(error.data.errmsg || '');
+          });
       }
+      this.logout();
+    },
+    logout() {
+      authLogout();
+      removeLocalStorage('Authorization', 'avatar', 'nickName');
     },
     passwordValid() {
+      if (this.password != this.password2) {
+        this.$toast.fail('两次密码输入不一致');
+        return false;
+      }
       return true;
     },
     getCode() {
-      if(this.mobile === ''){
+      if (this.mobile === '') {
         this.$toast.fail('请输入号码');
-        return
+        return;
       }
 
-      if (!this.counting) {
+      if (!this.cutDownTime) {
         authCaptcha({
           mobile: this.mobile,
           type: 'change-password'
-        }).then(() => {
-          this.$toast.success('发送成功');
-          this.counting = true;
-        }).catch(error => {
-          this.$toast.fail(error.data.errmsg);
-          this.counting = false;
         })
-
+          .then(() => {
+            this.$toast.success('发送成功');
+            this.cutDownTime = 60;
+            let timer = setInterval(() => {
+              this.cutDownTime--;
+              if (this.cutDownTime <= 0) {
+                this.cutDownTime = '';
+              }
+            }, 1000);
+          })
+          .catch(error => {
+            this.$toast.fail(error.data.errmsg);
+            this.counting = 0;
+          });
       }
-    },
+    }
   },
 
   components: {
@@ -100,16 +108,7 @@ export default {
   padding: 30px 15px 0 15px;
 }
 
-.verifi_code {
-  @include one-border;
-  padding-left: 10px;
-  &::after {
-    border-bottom: 0;
-    border-left: 1px solid $border-color;
-  }
-
-  &_counting {
-    color: $font-color-gray;
-  }
+.cutDownTime {
+  color: $font-color-gray;
 }
 </style>

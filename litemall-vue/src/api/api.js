@@ -74,6 +74,14 @@ export function authReset(data) {
     data    
   })
 }
+const AuthResetPhone='wx/auth/resetPhone';//账号手机号码重置
+export function authResetPhone(data) {
+  return request({
+    url: AuthResetPhone,
+    method: 'post',
+    data
+  })
+}
 const AuthRegisterCaptcha='wx/auth/regCaptcha'; //注册验证码
 export function authRegisterCaptcha(data) {
   return request({
@@ -426,6 +434,13 @@ export function couponReceive(data) {
 const CouponExchange='wx/coupon/exchange'; //优惠券兑换
 
 const StorageUpload='wx/storage/upload'; //图片上传,
+export function storageUpload(data) {
+  return request({
+    url:StorageUpload,
+    method:'post',
+    data
+  })
+}
 
 const UserIndex='wx/user/index'; //个人页面用户相关信息
 export function userIndex() {

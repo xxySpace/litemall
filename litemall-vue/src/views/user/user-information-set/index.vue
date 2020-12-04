@@ -8,15 +8,15 @@
               :src="avatar + '?x-oss-process=image/resize,m_fill,h_50,w_50'"
               alt="你的头像"
               v-if="avatar"
-            >
+            />
             <van-icon name="camera_full" v-else></van-icon>
           </div>
         </van-uploader>
       </van-cell>
 
-      <van-cell title="昵称" to="/user/information/setNickname" :value="nickName" isLink/>
-      <van-cell title="性别" :value="genderText" @click="showSex = true" isLink/>
-      <van-cell title="密码设置" to="/user/information/setPassword" isLink/>
+      <van-cell title="昵称" to="/user/information/setNickname" :value="nickName" isLink />
+      <van-cell title="性别" :value="genderText" @click="showSex = true" isLink />
+      <van-cell title="密码设置" :to="{path:'/user/information/setPassword',query:{mobile:mobile}}" isLink />
       <van-cell title="手机号" to="/user/information/setMobile" :value="mobile" isLink></van-cell>
     </van-cell-group>
 
@@ -38,7 +38,7 @@
 import { Uploader, Picker, Popup, Button } from 'vant';
 import { removeLocalStorage } from '@/utils/local-storage';
 import { getLocalStorage } from '@/utils/local-storage';
-import { authInfo, authLogout, authProfile } from '@/api/api';
+import { authInfo, authLogout, authProfile, storageUpload } from '@/api/api';
 
 export default {
   data() {
@@ -70,10 +70,17 @@ export default {
 
   methods: {
     avatarAfterRead(file) {
-      console.log(file);
+      const formData = new FormData();
+      formData.append('file', file.file);
+      storageUpload(formData).then(res => {
+        this.avatar = res.data.data.url;
+        this.updateUserInfo();
+      });
     },
     onSexConfirm(value, index) {
       this.showSex = false;
+      this.gender = index[0];
+      this.updateUserInfo();
     },
     getUserInfo() {
       authInfo().then(res => {
@@ -81,16 +88,30 @@ export default {
         this.nickName = res.data.data.nickName;
         this.gender = res.data.data.gender;
         this.mobile = res.data.data.mobile;
-      })
+      });
+    },
+    getUpdateData() {
+      return {
+        avatar: this.avatar,
+        nickName: this.nickName,
+        gender: this.gender
+      };
+    },
+    updateUserInfo() {
+      let data = this.getUpdateData();
+      authProfile(data).then(res => {
+        this.avatar = res.data.data.avatar;
+        this.nickName = res.data.data.nickname;
+        this.gender = res.data.data.gender;
+      });
     },
     loginOut() {
       authLogout().then(res => {
-        removeLocalStorage('Authorization')
-        removeLocalStorage('avatar')
-        removeLocalStorage('nickName')
+        removeLocalStorage('Authorization');
+        removeLocalStorage('avatar');
+        removeLocalStorage('nickName');
         this.$router.push({ name: 'home' });
       });
-
     }
   },
 
