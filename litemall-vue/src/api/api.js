@@ -132,6 +132,15 @@ export function goodsDetail(query) {
 }
 const GoodsRelated='wx/goods/related'; //商品详情页的关联商品（大家都在看）
 
+const ShareGood = 'wx/goods/shareGood'; //商品分享
+export function shareGood(data) {
+  return request({
+    url: ShareGood,
+    method: 'get',
+    params: data
+  })
+}
+
 const BrandList='wx/brand/list'; //品牌列表
 export function brandList(query) {
   return request({

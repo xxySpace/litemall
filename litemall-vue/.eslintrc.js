@@ -15,3 +15,24 @@ module.exports = {
     parser: 'babel-eslint'
   }
 };
+// module.exports = {
+//   root: true,
+//   parserOptions: {
+//     sourceType: 'module'
+//   },
+//   //parser: "vue-eslint-parser",
+//   env: {
+//     browser: true,
+//     node: true,
+//     es6: true,
+//   },
+//   "parser": "babel-eslint",
+//   parserOptions: {
+//     "ecmaVersion": 7,
+//     "sourceType": "module"
+//   },
+//   rules: {
+//     'no-console': 'off'
+//     //"parser": "vue-eslint-parser"
+//   }
+// }

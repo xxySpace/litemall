@@ -3,6 +3,7 @@ package org.linlinjava.litemall.wx.web;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.core.qcode.QRCodeService;
 import org.linlinjava.litemall.core.system.SystemConfig;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
@@ -13,10 +14,7 @@ import org.linlinjava.litemall.wx.annotation.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -72,6 +70,9 @@ public class WxGoodsController {
 
 	@Autowired
 	private LitemallGrouponRulesService rulesService;
+
+	@Autowired
+	private QRCodeService qrCodeService;
 
 	private final static ArrayBlockingQueue<Runnable> WORK_QUEUE = new ArrayBlockingQueue<>(9);
 
@@ -326,4 +327,25 @@ public class WxGoodsController {
 		return ResponseUtil.ok(goodsCount);
 	}
 
+	/**
+	 * 二维码分享
+	 * @param id
+	 * @param goodUrl
+	 * @param goodPicUrl
+	 * @param name
+	 * @return 二维码的存储地址
+	 */
+	@GetMapping("shareGood")
+	public Object shareGood(@NotNull Integer id, String goodUrl, String goodPicUrl, String name) {
+		if (StringUtils.isEmpty(goodPicUrl) || StringUtils.isEmpty(name)) {
+			LitemallGoods goods = goodsService.findById(id);
+			if (goods == null) {
+				return ResponseUtil.badArgumentValue();
+			}
+			goodPicUrl = goods.getPicUrl();
+			name = goods.getName();
+		}
+		String qRCodeAddress = qrCodeService.createGoodShareImage(String.valueOf(id), goodUrl, goodPicUrl, name);
+		return ResponseUtil.ok(qRCodeAddress);
+	}
 }

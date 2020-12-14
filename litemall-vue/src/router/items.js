@@ -27,6 +27,9 @@ export default [
     path: '/items/detail/:itemId',
     name: 'detail',
     props: true,
+    meta: {
+      showHeader:false
+    },
     component: () => import('@/views/items/detail')
   },
   {

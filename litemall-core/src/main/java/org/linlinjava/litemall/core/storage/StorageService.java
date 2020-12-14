@@ -59,7 +59,7 @@ public class StorageService {
         return storageInfo;
     }
 
-    private String generateKey(String originalFilename) {
+    public String generateKey(String originalFilename) {
         int index = originalFilename.lastIndexOf('.');
         String suffix = originalFilename.substring(index);
 

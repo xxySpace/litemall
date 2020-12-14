@@ -50,7 +50,8 @@ export default [
     name: 'address-edit',
     props: true,
     meta: {
-      login: true
+      login: true,
+      showHeader:false
     },
     component: UserAddressEdit
   },

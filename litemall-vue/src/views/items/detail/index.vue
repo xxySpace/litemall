@@ -1,8 +1,12 @@
 <template>
   <div class="item_detail">
+    <van-nav-bar title left-text="返回" left-arrow @click-left="goback">
+      <van-icon name="fenxiang" slot="right" @click="showShare = true"/>
+    </van-nav-bar>
+    <van-share-sheet v-model="showShare" title="分享给好友" :options="options" @select="onSelect" />
     <van-swipe :autoplay="3000">
       <van-swipe-item v-for="(image, index) in goods.info.gallery" :key="index">
-        <img v-lazy="image" width="100%">
+        <img v-lazy="image" width="100%" />
       </van-swipe-item>
     </van-swipe>
     <van-cell-group class="item_cell_group" v-if="goods">
@@ -11,37 +15,30 @@
           <span class="item_price">{{ goods.info.retailPrice*100 | yuan }}</span>
           <span class="item_market_price">{{goods.info.counterPrice*100 | yuan}}</span>
         </div>
-        <div class="item-title">
-          {{ goods.info.name }}
-        </div>
+        <div class="item-title">{{ goods.info.name }}</div>
         <div class="item_intro">{{goods.info.brief}}</div>
       </van-cell>
     </van-cell-group>
 
-  <div class="item_cell_group">
-    <van-cell-group>
-      <van-cell
-        title="规格"
-        isLink
-        value="请选择"
-        @click.native="skuClick"
+    <div class="item_cell_group">
+      <van-cell-group>
+        <van-cell title="规格" isLink value="请选择" @click.native="skuClick" />
+        <van-cell title="属性" isLink @click.native="propsPopup = true" />
+        <van-cell title="运费" value="满88免邮费" />
+      </van-cell-group>
+      <van-sku
+        v-model="showSku"
+        :sku="sku"
+        :hide-stock="true"
+        :goods="skuGoods"
+        :goodsId="goods.info.id"
+        @buy-clicked="buyGoods"
+        @add-cart="addCart"
       />
-      <van-cell title="属性" isLink @click.native="propsPopup = true"/>
-      <van-cell title="运费" value="满88免邮费"/>
-    </van-cell-group>
-    <van-sku
-      v-model="showSku"
-      :sku="sku"
-      :hide-stock="true"
-      :goods="skuGoods"
-      :goodsId="goods.info.id"
-      @buy-clicked="buyGoods"
-      @add-cart="addCart"
-    />
-    <van-popup v-model="propsPopup" position="bottom">
-      <popup-props :propsStr="props_str"></popup-props>
-    </van-popup>
-  </div>
+      <van-popup v-model="propsPopup" position="bottom">
+        <popup-props :propsStr="props_str"></popup-props>
+      </van-popup>
+    </div>
 
     <div class="item_desc">
       <div class="item_desc_title">商品详情</div>
@@ -52,23 +49,41 @@
     </div>
 
     <van-goods-action>
-      <van-goods-action-icon @click="toCart" icon="cart-o" :info="(cartInfo > 0) ? cartInfo : ''"/>
-      <van-goods-action-icon @click="addCollect" icon="star-o" :style="(goods.userHasCollect !== 0) ? 'color: #f7b444;':''"/>
-      <van-goods-action-button type="warning" @click="skuClick" text="加入购物车"/>
-      <van-goods-action-button type="danger" @click="skuClick" text="立即购买"/>
+      <van-goods-action-icon @click="toCart" icon="cart-o" :info="(cartInfo > 0) ? cartInfo : ''" />
+      <van-goods-action-icon
+        @click="addCollect"
+        icon="star-o"
+        :style="(goods.userHasCollect !== 0) ? 'color: #f7b444;':''"
+      />
+      <van-goods-action-button type="warning" @click="skuClick" text="加入购物车" />
+      <van-goods-action-button type="danger" @click="skuClick" text="立即购买" />
     </van-goods-action>
-
   </div>
 </template>
 
 <script>
+import {
+  goodsDetail,
+  cartGoodsCount,
+  collectAddOrDelete,
+  cartAdd,
+  cartFastAdd,
+  shareGood
+} from '@/api/api';
 
-import { goodsDetail, cartGoodsCount, collectAddOrDelete, cartAdd, cartFastAdd } from '@/api/api';
-
-import { Sku, Swipe, SwipeItem, GoodsAction, GoodsActionButton, GoodsActionIcon, Popup } from 'vant';
+import {
+  Sku,
+  Swipe,
+  SwipeItem,
+  GoodsAction,
+  GoodsActionButton,
+  GoodsActionIcon,
+  Popup
+} from 'vant';
 import { setLocalStorage } from '@/utils/local-storage';
 import popupProps from './popup-props';
 import _ from 'lodash';
+import { NavBar, Toast } from 'vant';
 
 export default {
   props: {
@@ -79,6 +94,18 @@ export default {
     const isLogin = !!localStorage.getItem('Authorization');
 
     return {
+      showShare: false,
+      options: [
+        [
+          { name: '微信', icon: 'wechat' },
+          { name: 'QQ', icon: 'qq' },
+        ],
+        [
+          { name: '复制链接', icon: 'link' },
+          { name: '分享海报', icon: 'poster' },
+          { name: '二维码', icon: 'qrcode' },
+        ],
+      ],
       isLogin,
       goods: {
         userHasCollect: 0,
@@ -124,8 +151,34 @@ export default {
   },
 
   methods: {
+    onSelect(option) {
+      var url = window.location.href
+      if (option.name === '复制链接') {
+        Toast(url);
+      }
+      if (option.name === '二维码') {
+        shareGood({
+          id: this.itemId,
+          goodUrl: "https://www.baidu.com/",
+          goodPicUrl: "",
+          name: this.goods.info.name
+        })
+          .then(res => {
+            console.log(res.data)
+          })
+          .catch(error => {
+            this.$toast.fail(error.data.errmsg);
+            this.counting = 0;
+          });
+      }
+      
+      this.showShare = false;
+    },
     skuClick() {
       this.showSku = true;
+    },
+    goback() {
+      this.$router.go(-1);
     },
     initData() {
       goodsDetail({ id: this.itemId }).then(res => {
@@ -340,7 +393,8 @@ export default {
     [GoodsAction.name]: GoodsAction,
     [GoodsActionButton.name]: GoodsActionButton,
     [GoodsActionIcon.name]: GoodsActionIcon,
-    [popupProps.name]: popupProps
+    [popupProps.name]: popupProps,
+    [NavBar.name]: NavBar
   }
 };
 </script>

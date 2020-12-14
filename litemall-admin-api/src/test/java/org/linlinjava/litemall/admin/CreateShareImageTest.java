@@ -3,7 +3,7 @@ package org.linlinjava.litemall.admin;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.linlinjava.litemall.core.qcode.QCodeService;
-import org.linlinjava.litemall.db.domain.LitemallGoods;
+import org.linlinjava.litemall.core.util.QRCodeUtil;
 import org.linlinjava.litemall.db.service.LitemallGoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +21,12 @@ public class CreateShareImageTest {
 
     @Test
     public void test() {
-        LitemallGoods good = litemallGoodsService.findById(1181010);
-        qCodeService.createGoodShareImage(good.getId().toString(), good.getPicUrl(), good.getName());
+//        Map<String, String> config = new HashMap<>();
+//        config.put("litemall_wx_share","true");
+//        SystemConfig.updateConfigs(config);
+//        LitemallGoods good = litemallGoodsService.findById(1006013);
+//        LitemallBrand brand = litemallBrandService.findById(good.getBrandId());
+//        qCodeService.createQRCode(good.getId().toString(),"http://localhost:6255/#/items/detail/1006013", good.getPicUrl(), good.getName());
+        QRCodeUtil.zxingCodeCreate("http://www.baidu.com", "D:/MyData/ex_yuhj/Documents/GitHub/litemall/storage/",500, "D:/MyData/ex_yuhj/Documents/GitHub/litemall/logo.jpg");
     }
 }
