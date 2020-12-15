@@ -22,13 +22,19 @@ public class QRCodeTest {
     @Autowired
     LitemallGoodsService litemallGoodsService;
 
+    /**
+     * 测试二维码生成
+     */
     @Test
-    public void test() {
+    public boolean test() {
         try {
             LitemallGoods good = litemallGoodsService.findById(1006013);
-            qrCodeService.createGoodShareImage(good.getId().toString(),"http://www.baidu.com", good.getPicUrl(), good.getName());
+            qrCodeService.createGoodShareImage(good.getId().toString(),"http://www.baidu.com", good.getPicUrl(), good.getName()); //海报
+            qrCodeService.createGoodShareQRCode(good.getId().toString(), "http://www.baidu.com", good.getName()); //二维码
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            return false;
         }
+        return true;
     }
 }

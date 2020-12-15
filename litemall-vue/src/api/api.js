@@ -132,10 +132,19 @@ export function goodsDetail(query) {
 }
 const GoodsRelated='wx/goods/related'; //商品详情页的关联商品（大家都在看）
 
-const ShareGood = 'wx/goods/shareGood'; //商品分享
+const ShareGood = 'wx/goods/shareGood'; //商品海报分享
 export function shareGood(data) {
   return request({
     url: ShareGood,
+    method: 'get',
+    params: data
+  })
+}
+
+const ShareGoodQRCode = 'wx/goods/shareGoodQRCode'; //商品二维码分享
+export function shareGoodQRCode(data) {
+  return request({
+    url: ShareGoodQRCode,
     method: 'get',
     params: data
   })

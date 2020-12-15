@@ -26,10 +26,10 @@ public class QRCodeService {
     private StorageService storageService;
 
     /**
-     * 创建商品分享图
+     * 创建商品分享海报
      *
      * @param goodId     商品编码
-     * @param goodPicUrl 商品链接
+     * @param goodUrl    商品链接
      * @param goodPicUrl 商品图片
      * @param goodName   商品名
      */
@@ -53,7 +53,42 @@ public class QRCodeService {
             ByteArrayInputStream inputStream2 = new ByteArrayInputStream(imageData);
             //存储分享图
             LitemallStorage litemallStorage = storageService.store(inputStream2, imageData.length, "image/jpeg",
-                    getKeyName(goodId));
+                    getPosterName(goodId));
+
+            return litemallStorage.getUrl();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return "";
+    }
+
+    /**
+     * 创建商品分享二维码
+     *
+     * @param goodId   商品编码
+     * @param goodUrl  商品链接
+     * @param goodName 商品名
+     */
+    public String createGoodShareQRCode(String goodId, String goodUrl, String goodName) {
+        try {
+            //获取系统logo图片地址
+            ClassPathResource redResource = new ClassPathResource("logo.png");
+            String logoPath = redResource.getClassLoader().getResource("logo.png").getPath().substring(1);
+            //构造商品分享图名字
+            String fileName = goodName + ".jpg";
+            fileName = storageService.generateKey(fileName);
+
+            //创建该商品的二维码，获取二维码的字节输入流
+            BufferedImage image = QRCodeUtil.getBufferedImage(goodUrl, 500, logoPath);
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(image, "jpg", os);
+            byte[] bytes = os.toByteArray();
+            InputStream is = new ByteArrayInputStream(bytes);
+            //存储分享图
+            LitemallStorage litemallStorage = storageService.store(is, bytes.length, "image/jpeg",
+                    getQRCodeName(goodId));
 
             return litemallStorage.getUrl();
         } catch (Exception e) {
@@ -121,7 +156,7 @@ public class QRCodeService {
         Graphics2D g2D = (Graphics2D) baseImage.getGraphics();
         g2D.setColor(new Color(167, 136, 69));
 
-        //TODO 注意，这里的字体必须安装在服务器上
+        //注意，这里的字体必须安装在服务器上
         g2D.setFont(new Font("Microsoft YaHei", Font.PLAIN, 28));
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -136,7 +171,23 @@ public class QRCodeService {
         g2D.dispose();
     }
 
-    private String getKeyName(String goodId) {
-        return "GOOD_QCODE_" + goodId + ".jpg";
+    /**
+     * 海报
+     *
+     * @param goodId
+     * @return
+     */
+    private String getPosterName(String goodId) {
+        return "GOOD_POSTER_" + goodId + ".jpg";
+    }
+
+    /**
+     * 二维码
+     *
+     * @param goodId
+     * @return
+     */
+    private String getQRCodeName(String goodId) {
+        return "GOOD_QR_CODE_" + goodId + ".jpg";
     }
 }

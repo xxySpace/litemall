@@ -1,7 +1,7 @@
 <template>
   <div class="item_detail">
     <van-nav-bar title left-text="返回" left-arrow @click-left="goback">
-      <van-icon name="fenxiang" slot="right" @click="showShare = true"/>
+      <van-icon name="fenxiang" slot="right" @click="showShare = true" />
     </van-nav-bar>
     <van-share-sheet v-model="showShare" title="分享给好友" :options="options" @select="onSelect" />
     <van-swipe :autoplay="3000">
@@ -58,6 +58,30 @@
       <van-goods-action-button type="warning" @click="skuClick" text="加入购物车" />
       <van-goods-action-button type="danger" @click="skuClick" text="立即购买" />
     </van-goods-action>
+    <van-overlay :show="show" @click="show = false">
+      <div class="wrapper">
+        <div class="block">
+          <div>
+            <img :src="imrUrl" />
+          </div>
+        </div>
+      </div>
+    </van-overlay>
+    <van-popup
+      v-model="qRCodeShow"
+      closeable
+      close-icon="close"
+      position="top"
+      :style="{ height: '70%' }"
+    >
+      <div class="qRblock">
+        <div class="qRStyle">
+          <img :src="qRUrl" />
+        </div>
+        <div class="item-title">{{ goods.info.name }}</div>
+        <img :src="picUrl" />
+      </div>
+    </van-popup>
   </div>
 </template>
 
@@ -68,7 +92,8 @@ import {
   collectAddOrDelete,
   cartAdd,
   cartFastAdd,
-  shareGood
+  shareGood,
+  shareGoodQRCode
 } from '@/api/api';
 
 import {
@@ -98,13 +123,13 @@ export default {
       options: [
         [
           { name: '微信', icon: 'wechat' },
-          { name: 'QQ', icon: 'qq' },
+          { name: 'QQ', icon: 'qq' }
         ],
         [
           { name: '复制链接', icon: 'link' },
           { name: '分享海报', icon: 'poster' },
-          { name: '二维码', icon: 'qrcode' },
-        ],
+          { name: '二维码', icon: 'qrcode' }
+        ]
       ],
       isLogin,
       goods: {
@@ -132,7 +157,12 @@ export default {
         }
       },
       propsPopup: false,
-      showSku: false
+      showSku: false,
+      show: false,
+      imrUrl: '',
+      qRUrl: '',
+      picUrl: '',
+      qRCodeShow: false
     };
   },
 
@@ -152,26 +182,57 @@ export default {
 
   methods: {
     onSelect(option) {
-      var url = window.location.href
+      let url = window.location.href;
+      this.picUrl = this.goods.info.gallery[0];
       if (option.name === '复制链接') {
-        Toast(url);
+        let oInput = document.createElement('input');
+        oInput.value = url;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象;
+        document.execCommand('Copy'); // 执行浏览器复制命令
+        this.$toast({
+          message: '复制成功',
+          duration: 1500
+        });
+        oInput.remove();
       }
-      if (option.name === '二维码') {
+      if (option.name === '分享海报') {
         shareGood({
           id: this.itemId,
-          goodUrl: "https://www.baidu.com/",
-          goodPicUrl: "",
+          goodUrl: url,
+          goodPicUrl: '',
           name: this.goods.info.name
         })
           .then(res => {
-            console.log(res.data)
+            this.show = true;
+            this.imrUrl = res.data.data;
           })
           .catch(error => {
             this.$toast.fail(error.data.errmsg);
             this.counting = 0;
           });
       }
-      
+      if (option.name === '二维码') {
+        shareGoodQRCode({
+          id: this.itemId,
+          goodUrl: url,
+          name: this.goods.info.name
+        })
+          .then(res => {
+            this.qRCodeShow = true;
+            this.qRUrl = res.data.data;
+          })
+          .catch(error => {
+            this.$toast.fail(error.data.errmsg);
+            this.counting = 0;
+          });
+      } 
+      if (option.name === '微信' || option.name === 'QQ') {
+        this.$toast({
+          message: option.name,
+          duration: 1500
+        });
+      }
       this.showShare = false;
     },
     skuClick() {
@@ -460,5 +521,42 @@ export default {
   @include one-border;
   padding: 10px 0;
   text-align: center;
+}
+
+.wrapper {
+  width: 80%;
+  height: auto;
+  background: #ffffff;
+  border: 1px #000 solid;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+  padding: 8px;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  left: 50%;
+  margin-left: -40%;
+  z-index: 99;
+}
+
+.qRblock {
+  text-align: center;
+}
+
+.qRStyle {
+  width: 25%;
+  height: auto;
+  background: #ffffff;
+  border: 1px #000 solid;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+  padding: 8px;
+  position: relative;
+  top: -50%;
+  margin: 0 auto;
 }
 </style>
