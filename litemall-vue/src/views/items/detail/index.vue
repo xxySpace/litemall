@@ -83,9 +83,9 @@
                     <div class="username">
                       <p class="tip">
                         {{item.userInfo.nickName}}
-                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===0" icon="pingfen1" void-icon="pingfen1" />
-                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===1" icon="pingfen1" void-icon="pingfen1" />
-                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===2" icon="pingfen1" void-icon="pingfen1" />
+                          <van-rate v-model="item.star" color="#ff0033" v-if="item.userInfo.userLevel ===0" icon="aixin1"  void-icon="aixin1" />
+                          <van-rate v-model="item.star" color="#33ccff" v-if="item.userInfo.userLevel ===1" icon="zuanshi1" void-icon="zuanshi1" />
+                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===2" icon="V" void-icon="V" />
                       </p>
                       <p class="mt5">{{item.addTime}} | {{item.specifications}}</p>
                     </div>
