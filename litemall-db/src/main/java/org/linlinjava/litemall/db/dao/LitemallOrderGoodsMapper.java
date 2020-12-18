@@ -149,4 +149,6 @@ public interface LitemallOrderGoodsMapper {
      * @mbg.generated
      */
     int logicalDeleteByPrimaryKey(Integer id);
+
+    LitemallOrderGoods findByCommentId(Integer id);
 }

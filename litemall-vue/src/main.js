@@ -15,7 +15,7 @@ Vue.component(VueCountdown.name, VueCountdown);
 Vue.use(filters);
 
 
-import { Lazyload, Icon, Cell, CellGroup, loading, Button, Toast, ShareSheet, Overlay} from 'vant';
+import { Lazyload, Icon, Cell, CellGroup, loading, Button, Toast, ShareSheet, Overlay, Image as VanImage, Rate} from 'vant';
 Vue.use(Icon);
 Vue.use(Cell);
 Vue.use(CellGroup);
@@ -24,6 +24,8 @@ Vue.use(Button);
 Vue.use(Toast);
 Vue.use(ShareSheet);
 Vue.use(Overlay);
+Vue.use(VanImage);
+Vue.use(Rate);
 Vue.use(Lazyload, {
   preLoad: 1.3,
   error: require('@/assets/images/goods_default.png'),

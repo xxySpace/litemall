@@ -17,6 +17,10 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+i.van-icon-pingfen1:before {
+	content: "\e61d";
+}
+
 i.van-icon-huida:before {
 	content: "\e678";
 }

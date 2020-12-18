@@ -131,6 +131,13 @@ export function goodsDetail(query) {
   })
 }
 const GoodsRelated='wx/goods/related'; //商品详情页的关联商品（大家都在看）
+export function goodsRelated(query) {
+  return request({
+    url: GoodsRelated,
+    method: 'get',
+    params: query
+  })
+}
 
 const ShareGood = 'wx/goods/shareGood'; //商品海报分享
 export function shareGood(data) {
@@ -247,8 +254,22 @@ export function collectAddOrDelete(data) {
     data
   })
 }
-const CommentList='wx/comment/list'; //评论列表
+const CommentsDetail='wx/comment/list'; //评论列表
+export function commentsDetail(query) {
+  return request({
+    url: CommentsDetail,
+    method: 'get',
+    params: query
+  })
+}
 const CommentCount='wx/comment/count'; //评论总数
+export function commentCount(query) {
+  return request({
+    url: CommentCount,
+    method: 'get',
+    params: query
+  })
+}
 const CommentPost='wx/comment/post'; //发表评论
 
 const TopicList='wx/topic/list'; //专题列表

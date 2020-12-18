@@ -1,51 +1,124 @@
 <template>
   <div class="item_detail">
-    <van-nav-bar title left-text="返回" left-arrow @click-left="goback">
-      <van-icon name="fenxiang" slot="right" @click="showShare = true" />
-    </van-nav-bar>
-    <van-share-sheet v-model="showShare" title="分享给好友" :options="options" @select="onSelect" />
-    <van-swipe :autoplay="3000">
-      <van-swipe-item v-for="(image, index) in goods.info.gallery" :key="index">
-        <img v-lazy="image" width="100%" />
-      </van-swipe-item>
-    </van-swipe>
-    <van-cell-group class="item_cell_group" v-if="goods">
-      <van-cell class="item_info">
-        <div>
-          <span class="item_price">{{ goods.info.retailPrice*100 | yuan }}</span>
-          <span class="item_market_price">{{goods.info.counterPrice*100 | yuan}}</span>
-        </div>
-        <div class="item-title">{{ goods.info.name }}</div>
-        <div class="item_intro">{{goods.info.brief}}</div>
-      </van-cell>
-    </van-cell-group>
+    <div>
+      <van-nav-bar title left-text="返回" left-arrow @click-left="goback">
+        <van-icon name="fenxiang" slot="right" @click="showShare = true" />
+      </van-nav-bar>
+      <van-share-sheet v-model="showShare" title="分享给好友" :options="options" @select="onSelect" />
+      <van-tabs v-model="navActive" @click="handleTabClick">
+        <van-tab title="宝贝">
+          <van-swipe :autoplay="3000">
+            <van-swipe-item v-for="(image, index) in goods.info.gallery" :key="index">
+              <img v-lazy="image" width="100%" />
+            </van-swipe-item>
+          </van-swipe>
+          <van-cell-group class="item_cell_group" v-if="goods">
+            <van-cell class="item_info">
+              <div>
+                <span class="item_price">{{ goods.info.retailPrice*100 | yuan }}</span>
+                <span class="item_market_price">{{goods.info.counterPrice*100 | yuan}}</span>
+              </div>
+              <div class="item-title">{{ goods.info.name }}</div>
+              <div class="item_intro">{{goods.info.brief}}</div>
+            </van-cell>
+          </van-cell-group>
 
-    <div class="item_cell_group">
-      <van-cell-group>
-        <van-cell title="规格" isLink value="请选择" @click.native="skuClick" />
-        <van-cell title="属性" isLink @click.native="propsPopup = true" />
-        <van-cell title="运费" value="满88免邮费" />
-      </van-cell-group>
-      <van-sku
-        v-model="showSku"
-        :sku="sku"
-        :hide-stock="true"
-        :goods="skuGoods"
-        :goodsId="goods.info.id"
-        @buy-clicked="buyGoods"
-        @add-cart="addCart"
-      />
-      <van-popup v-model="propsPopup" position="bottom">
-        <popup-props :propsStr="props_str"></popup-props>
-      </van-popup>
-    </div>
+          <div class="item_cell_group">
+            <van-cell-group>
+              <van-cell title="规格" isLink value="请选择" @click.native="skuClick" />
+              <van-cell title="属性" isLink @click.native="propsPopup = true" />
+              <van-cell title="运费" value="满88免邮费" />
+            </van-cell-group>
+            <van-sku
+              v-model="showSku"
+              :sku="sku"
+              :hide-stock="true"
+              :goods="skuGoods"
+              :goodsId="goods.info.id"
+              @buy-clicked="buyGoods"
+              @add-cart="addCart"
+            />
+            <van-popup v-model="propsPopup" position="bottom">
+              <popup-props :propsStr="props_str"></popup-props>
+            </van-popup>
+          </div>
 
-    <div class="item_desc">
-      <div class="item_desc_title">商品详情</div>
-      <div class="item_desc_wrap" v-if="goods.info.detail" v-html="goods.info.detail"></div>
-      <div class="item_desc_wrap" v-else style="text-align: center;">
-        <p>无详情</p>
-      </div>
+          <div class="item_desc">
+            <div class="item_desc_title">商品详情</div>
+            <div class="item_desc_wrap" v-if="goods.info.detail" v-html="goods.info.detail"></div>
+            <div class="item_desc_wrap" v-else style="text-align: center;">
+              <p>无详情</p>
+            </div>
+          </div>
+        </van-tab>
+
+        <van-tab title="评价">
+          <van-list
+            v-model="loading"
+            :finished="finished"
+            :immediate-check="false"
+            finished-text="没有更多了"
+            @load="getCommentList"
+          >
+            <div class="count">
+              <div class="name">宝贝评价({{allCount.allCount}})</div>
+            </div>
+            <div class="container" v-for="(item,index) in commentsDetail" :key="index">
+              <div class="header">
+                <div v-if="item.userInfo.avatarUrl === ''">
+                  <van-image
+                    :src="require('../../../assets/images/avatar_default.png')"
+                    round
+                    width="4rem"
+                    height="4rem"
+                  />
+                </div>
+                <div v-else>
+                  <van-image :src="item.userInfo.avatarUrl" round width="4rem" height="4rem" />
+                </div>
+              </div>
+              <div class="right_con">
+                <div class="right_main">
+                  <div class="user">
+                    <div class="username">
+                      <p class="tip">
+                        {{item.userInfo.nickName}}
+                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===0" icon="pingfen1" void-icon="pingfen1" />
+                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===1" icon="pingfen1" void-icon="pingfen1" />
+                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===2" icon="pingfen1" void-icon="pingfen1" />
+                      </p>
+                      <p class="mt5">{{item.addTime}} | {{item.specifications}}</p>
+                    </div>
+                  </div>
+                  <br />
+                </div>
+              </div>
+              <div class="gallery">
+                <p class="mt10">{{item.content}}</p>
+                <div v-if="item.hasPic !=0">
+                  <div class="img_box" v-for='(image,index) of item.picList' :key='index'>
+                    <img class="groupPic" :src="image" alt="" @click="getImg(index,item.picList)">
+                  </div>
+                </div>
+                <div style="clear:both;"></div>
+              </div>
+            </div>
+          </van-list>
+        </van-tab>
+        <van-tab title="推荐">
+          <van-panel>
+            <van-row gutter>
+              <van-col span="12" v-for="(relatedGood ,index) in relateds" :key="index">
+                <router-link :to="{ path: `/items/detail/${relatedGood.id}`}">
+                  <img class="relatedPic" :src="relatedGood.picUrl" @click="dump(relatedGood.id)" />
+                </router-link>
+                <span class="relatedGoodName">{{relatedGood.name}}</span>
+                <span class="relatedGoodRetailPrice">￥ {{relatedGood.retailPrice}}</span>
+              </van-col>
+            </van-row>
+          </van-panel>
+        </van-tab>
+      </van-tabs>
     </div>
 
     <van-goods-action>
@@ -93,7 +166,13 @@ import {
   cartAdd,
   cartFastAdd,
   shareGood,
-  shareGoodQRCode
+  shareGoodQRCode,
+  commentsDetail,
+  commentCount,
+  topicList,
+  topicDetail,
+  topicRelated,
+  goodsRelated
 } from '@/api/api';
 
 import {
@@ -108,7 +187,19 @@ import {
 import { setLocalStorage } from '@/utils/local-storage';
 import popupProps from './popup-props';
 import _ from 'lodash';
-import { NavBar, Toast } from 'vant';
+import {
+  NavBar,
+  Toast,
+  Card,
+  List,
+  Tab,
+  Tabs,
+  Panel,
+  Row,
+  Col,
+  Rate,
+  ImagePreview
+} from 'vant';
 
 export default {
   props: {
@@ -132,6 +223,9 @@ export default {
         ]
       ],
       isLogin,
+      value: 3,
+      page: 0,
+      limit: 10,
       goods: {
         userHasCollect: 0,
         info: {
@@ -156,13 +250,23 @@ export default {
           sku_str: 'aa'
         }
       },
+      components: {
+        Image
+      },
       propsPopup: false,
       showSku: false,
       show: false,
       imrUrl: '',
       qRUrl: '',
       picUrl: '',
-      qRCodeShow: false
+      qRCodeShow: false,
+      navActive: 0,
+      loading: false,
+      finished: false,
+      commentsDetail: [],
+      goodsRelated: [],
+      relateds: {},
+      allCount: {}
     };
   },
 
@@ -177,7 +281,7 @@ export default {
   },
 
   created() {
-    this.initData();
+    this.initData(this.itemId);
   },
 
   methods: {
@@ -226,7 +330,7 @@ export default {
             this.$toast.fail(error.data.errmsg);
             this.counting = 0;
           });
-      } 
+      }
       if (option.name === '微信' || option.name === 'QQ') {
         this.$toast({
           message: option.name,
@@ -241,8 +345,8 @@ export default {
     goback() {
       this.$router.go(-1);
     },
-    initData() {
-      goodsDetail({ id: this.itemId }).then(res => {
+    initData(itemId) {
+      goodsDetail({ id: itemId }).then(res => {
         this.goods = res.data.data;
         this.skuAdapter();
       });
@@ -443,7 +547,55 @@ export default {
       });
 
       return specifications;
-    }
+    },
+    handleTabClick(id, title) {
+      // 点击评论
+      if (id === 1) {
+        this.getCommentList();
+        commentCount({
+          type: 0,
+          valueId: this.itemId
+        }).then(res => {
+          this.allCount = res.data.data;
+        });
+        //点击推荐
+      } else if (id === 2) {
+        this.getGoodsRelated(this.itemId);
+      }
+    },
+    getCommentList() {
+      this.page++;
+      commentsDetail({
+        type: 0,
+        valueId: this.itemId,
+        showType: 0,
+        page: this.page,
+        limit: this.limit
+      }).then(res => {
+        this.commentsDetail.push(...res.data.data.list);
+        this.loading = false;
+        this.finished = res.data.data.page >= res.data.data.pages;
+      });
+    },
+    dump(id) {
+      this.navActive = 0; //切换到宝贝页面
+      this.initData(id); //传商品id
+    },
+    getGoodsRelated(id) {
+      goodsRelated({ id: id }).then(res => {
+        this.relateds = res.data.data.list;
+      });
+    },
+    getImg(index,image){
+      ImagePreview({
+          images: image, // 预览图片的那个数组
+          showIndex:true,
+          loop:false,
+          startPosition:index, // 指明预览第几张图
+          closeable: true,
+          closeOnPopstate: true
+      })
+    },
   },
 
   components: {
@@ -455,7 +607,15 @@ export default {
     [GoodsActionButton.name]: GoodsActionButton,
     [GoodsActionIcon.name]: GoodsActionIcon,
     [popupProps.name]: popupProps,
-    [NavBar.name]: NavBar
+    [NavBar.name]: NavBar,
+    [List.name]: List,
+    [Card.name]: Card,
+    [Tab.name]: Tab,
+    [Tabs.name]: Tabs,
+    [Panel.name]: Panel,
+    [Row.name]: Row,
+    [Col.name]: Col,
+    [Rate.name]: Rate
   }
 };
 </script>
@@ -558,5 +718,71 @@ export default {
   position: relative;
   top: -50%;
   margin: 0 auto;
+}
+
+.item_list {
+  background-color: #fff;
+}
+
+.h {
+  height: 100px;
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.h .name {
+  display: block;
+  height: 30px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #333;
+}
+
+.h .desc {
+  display: block;
+  height: 24px;
+  font-size: 16px;
+  color: #999;
+}
+.count {
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+}
+.van-panel {
+  margin-top: 20px;
+}
+.groupPic {
+  height: 60px;
+  width: 100px;
+  margin-right: 3px;
+  float: left;
+}
+.relatedPic {
+  width: 180px;
+  height: 180px;
+}
+.relatedGoodName {
+  padding-left: 20px;
+  position: relative;
+  bottom: 10px;
+  color: rgb(123, 116, 116);
+  white-space: nowrap;
+}
+.relatedGoodRetailPrice {
+  padding-left: 80px;
+  position: relative;
+  bottom: 10px;
+  color: #ab956d;
+}
+.header {
+  width: 66px;
+  height: 66px;
+  float: left;
 }
 </style>

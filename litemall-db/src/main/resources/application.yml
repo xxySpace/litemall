@@ -10,3 +10,12 @@ logging:
     org.springframework:  ERROR
     org.mybatis:  ERROR
     org.linlinjava.litemall.db:  DEBUG
+
+mybatis:
+  mapper-locations: classpath*:dao/*.xml,classpath*:org/linlinjava/litemall/db/**/*Mapper.xml
+  type-aliases-package: org.linlinjava.litemall.db.domain
+  configuration:
+    #进行自动映射时，数据以下划线命名，如数据库返回的"order_address"命名字段是否映射为class的"orderAddress"字段。默认为false
+    map-underscore-to-camel-case: true
+    # 输出SQL执行语句 （log4j2本身可以输出sql语句）
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #这种带结果集

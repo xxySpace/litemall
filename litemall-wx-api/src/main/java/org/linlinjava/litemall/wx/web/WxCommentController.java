@@ -1,14 +1,13 @@
 package org.linlinjava.litemall.wx.web;
 
+import net.bytebuddy.asm.Advice;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.domain.LitemallComment;
-import org.linlinjava.litemall.db.service.LitemallCommentService;
-import org.linlinjava.litemall.db.service.LitemallGoodsService;
-import org.linlinjava.litemall.db.service.LitemallTopicService;
-import org.linlinjava.litemall.db.service.LitemallUserService;
+import org.linlinjava.litemall.db.domain.LitemallOrderGoods;
+import org.linlinjava.litemall.db.service.*;
 import org.linlinjava.litemall.wx.annotation.LoginUser;
 import org.linlinjava.litemall.wx.dto.UserInfo;
 import org.linlinjava.litemall.wx.service.UserInfoService;
@@ -16,7 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.jws.Oneway;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +44,8 @@ public class WxCommentController {
     private LitemallGoodsService goodsService;
     @Autowired
     private LitemallTopicService topicService;
+    @Autowired
+    private LitemallOrderGoodsService orderGoodsService;
 
     private Object validate(LitemallComment comment) {
         String content = comment.getContent();
@@ -134,21 +139,43 @@ public class WxCommentController {
                        @NotNull Integer showType,
                        @RequestParam(defaultValue = "1") Integer page,
                        @RequestParam(defaultValue = "10") Integer limit) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<LitemallComment> commentList = commentService.query(type, valueId, showType, page, limit);
 
         List<Map<String, Object>> commentVoList = new ArrayList<>(commentList.size());
         for (LitemallComment comment : commentList) {
             Map<String, Object> commentVo = new HashMap<>();
-            commentVo.put("addTime", comment.getAddTime());
+            commentVo.put("addTime", calcDate(comment.getAddTime()));
             commentVo.put("content", comment.getContent());
             commentVo.put("adminContent", comment.getAdminContent());
             commentVo.put("picList", comment.getPicUrls());
+            commentVo.put("hasPic", comment.getHasPicture());
+            commentVo.put("star", 5);
 
             UserInfo userInfo = userInfoService.getInfo(comment.getUserId());
             commentVo.put("userInfo", userInfo);
-
+            //关联订单获取规格specifications
+            LitemallOrderGoods orderGoods = orderGoodsService.findByCommentId(comment.getId());
+            if (orderGoods != null) {
+                commentVo.put("specifications", orderGoods.getSpecifications());
+            } else {
+                commentVo.put("specifications", "已隐藏");
+            }
             commentVoList.add(commentVo);
         }
         return ResponseUtil.okList(commentVoList, commentList);
+    }
+
+    private String calcDate(LocalDateTime time) {
+        String result;
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        Duration dur = Duration.between(time, LocalDateTime.now());
+        long days = dur.toDays();
+        if (days > 30L) {
+            result = time.format(df);
+        } else {
+            result = days + "天前";
+        }
+        return result;
     }
 }
