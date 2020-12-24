@@ -56,7 +56,6 @@ export default {
             }, 1000);
           })
           .catch(error => {
-            this.$toast.fail(error.data.errmsg);
             this.cutDownTime = 0;
           });
       }
@@ -79,7 +78,7 @@ export default {
           this.$router.go(-1);
         })
         .catch(error => {
-          this.$toast.fail(error.data.errmsg || '');
+          this.$toast.fail(error || '');
         });
     }
   },

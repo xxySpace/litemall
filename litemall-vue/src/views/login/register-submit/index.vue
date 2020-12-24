@@ -77,7 +77,6 @@ export default {
       authRegisterCaptcha(data).then(res => {
         this.counting = true;
       }).catch(error => {
-        alert(error.data.errmsg);
         this.counting = true;
       });
     },

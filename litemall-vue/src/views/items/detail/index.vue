@@ -312,7 +312,6 @@ export default {
             this.imrUrl = res.data.data;
           })
           .catch(error => {
-            this.$toast.fail(error.data.errmsg);
             this.counting = 0;
           });
       }
@@ -327,7 +326,6 @@ export default {
             this.qRUrl = res.data.data;
           })
           .catch(error => {
-            this.$toast.fail(error.data.errmsg);
             this.counting = 0;
           });
       }

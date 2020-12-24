@@ -49,7 +49,7 @@ export default {
             logout();
           })
           .catch(error => {
-            this.$toast.fail(error.data.errmsg || '');
+            this.$toast.fail(error || '');
           });
       }
       this.logout();
@@ -87,7 +87,6 @@ export default {
             }, 1000);
           })
           .catch(error => {
-            this.$toast.fail(error.data.errmsg);
             this.counting = 0;
           });
       }

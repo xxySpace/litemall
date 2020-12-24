@@ -96,7 +96,7 @@ export default {
 
         this.routerRedirect();
       }).catch(error => {
-        Toast.fail(error.data.errmsg);
+        Toast.fail(error);
       });
     },
 

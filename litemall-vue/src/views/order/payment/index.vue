@@ -141,6 +141,7 @@ export default {
           }
         } else {
           //todo : alipay
+          console.log(this.payWay);
         }
       });
     },
