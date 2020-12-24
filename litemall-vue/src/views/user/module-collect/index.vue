@@ -10,8 +10,8 @@
                 :desc="item.brief"
                 :title="item.name"
                 :thumb="item.picUrl"
-                :price="item.retailPrice"
-                :origin-price="item.counterPrice"
+                :price="item.retailPrice +'.00'"
+                :origin-price="item.counterPrice +'.00'"
                 @click="itemClick(item.valueId)">
         <div slot="footer">
           <van-button size="mini"

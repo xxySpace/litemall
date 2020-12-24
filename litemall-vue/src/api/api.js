@@ -362,6 +362,14 @@ export function orderH5pay(data) {
     data
   });
 }
+const OrderMoNiPay = 'wx/order/moNiPay'; // 模拟h5支付
+export function orderMoNiPay(data) {
+  return request({
+    url: OrderMoNiPay,
+    method: 'post',
+    data
+  });
+}
 export const OrderList='wx/order/list'; //订单列表
 export function orderList(query) {
   return request({

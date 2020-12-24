@@ -105,6 +105,18 @@ public class WxOrderController {
     }
 
     /**
+     * 微信模拟支付
+     * @param userId
+     * @param body
+     * @param request
+     * @return
+     */
+    @PostMapping("moNiPay")
+    public Object moNiPay(@LoginUser Integer userId, @RequestBody String body, HttpServletRequest request) {
+        return wxOrderService.moNiPay(userId, body, request);
+    }
+
+    /**
      * 微信付款成功或失败回调接口
      * <p>
      *  TODO

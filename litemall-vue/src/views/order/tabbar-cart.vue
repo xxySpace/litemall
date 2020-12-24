@@ -8,7 +8,7 @@
       <div v-for="(item, i) in goods" :key="i" class="card-goods__item">
         <van-checkbox :key="item.id" :name="item.id" v-model="item.checked"></van-checkbox>
 
-        <van-card :title="item.goodsName" :price="item.price" :num="item.number" :thumb="item.picUrl">
+        <van-card :title="item.goodsName" :price="item.price +'.00'" :num="item.number" :thumb="item.picUrl">
           <div slot="desc">
             <div class="van-card__desc">
               <van-tag plain style="margin-right:6px;" v-for="(spec, index) in item.specifications" :key="index">
