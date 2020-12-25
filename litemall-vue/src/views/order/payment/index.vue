@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { Radio, RadioGroup, Dialog } from 'vant';
+import { Radio, RadioGroup, Dialog, Toast } from 'vant';
 import { orderDetail, orderPrepay, orderH5pay, orderMoNiPay } from '@/api/api';
 import _ from 'lodash';
 import { getLocalStorage, setLocalStorage } from '@/utils/local-storage';
@@ -149,25 +149,20 @@ export default {
       } 
       if (this.payWay === 'ali') {
         //todo : alipay
-        Dialog.alert('你选择了支付宝支付');
+        //Dialog.alert({ message: '你选择了支付宝支付' });
+        Toast('你选择了支付宝支付');
       }
       else {
         orderMoNiPay({ orderId: this.orderId })
             .then(res => {
-              let data = res.data.data;
+              Toast.success('支付成功');
               window.location.replace(
-                data.mwebUrl +
-                  '&redirect_url=' +
-                  encodeURIComponent(
-                    window.location.origin +
-                      '/#/?orderId=' +
-                      this.orderId +
-                      '&tip=yes'
-                  )
+                  '/#/order/order-detail?orderId=' +
+                      this.orderId
               );
             })
             .catch(err => {
-              Dialog.alert({ message: err.data.errmsg });
+              Dialog.alert({ message: err });
             });
       }
     },
