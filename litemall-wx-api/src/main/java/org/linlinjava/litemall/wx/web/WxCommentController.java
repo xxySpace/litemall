@@ -1,6 +1,5 @@
 package org.linlinjava.litemall.wx.web;
 
-import net.bytebuddy.asm.Advice;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.jws.Oneway;
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -150,7 +148,7 @@ public class WxCommentController {
             commentVo.put("adminContent", comment.getAdminContent());
             commentVo.put("picList", comment.getPicUrls());
             commentVo.put("hasPic", comment.getHasPicture());
-            commentVo.put("star", 5);
+            commentVo.put("star", comment.getStar());
 
             UserInfo userInfo = userInfoService.getInfo(comment.getUserId());
             commentVo.put("userInfo", userInfo);

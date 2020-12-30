@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -32,6 +33,15 @@ public class LitemallFootprintService {
         LitemallFootprintExample example = new LitemallFootprintExample();
         example.or().andIdEqualTo(id).andUserIdEqualTo(userId).andDeletedEqualTo(false);
         return footprintMapper.selectOneByExample(example);
+    }
+
+    public List<LitemallFootprint> findByGoodId(Integer userId, Integer goodId, String addTime) {
+        LitemallFootprintExample example = new LitemallFootprintExample();
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse(addTime + " 00:00:00", df);
+        LocalDateTime endTime = LocalDateTime.parse(addTime + " 23:59:59", df);
+        example.or().andGoodsIdEqualTo(goodId).andUserIdEqualTo(userId).andAddTimeBetween(startTime, endTime).andDeletedEqualTo(false);
+        return footprintMapper.selectByExample(example);
     }
 
     public void deleteById(Integer id) {

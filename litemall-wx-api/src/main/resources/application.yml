@@ -13,7 +13,8 @@ logging:
     org.springframework:  ERROR
     org.mybatis:  ERROR
     org.linlinjava.litemall.wx:  DEBUG
-    org.linlinjava.litemall:  ERROR
+    org.linlinjava.litemall:  DEBUG
+  config: classpath:logback-spring.xml
 
 swagger:
   production: false

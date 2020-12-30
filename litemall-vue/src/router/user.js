@@ -1,5 +1,6 @@
 const tab_user = () => import('@/views/user/tabbar-user');
 const UserCollect = () => import('@/views/user/module-collect');
+const UserFootprint = () => import('@/views/user/module-footprint');
 const UserAddress = () => import('@/views/user/module-address');
 const UserAddressEdit = () => import('@/views/user/module-address-edit');
 const UserServer = () => import('@/views/user/module-server');
@@ -36,6 +37,15 @@ export default [
       login: true
     },
     component: UserCollect
+  },
+  {
+    path: '/user/footprint',
+    name: 'footprint',
+    meta: {
+      login: true,
+      showHeader:false
+    },
+    component: UserFootprint
   },
   {
     path: '/user/address',

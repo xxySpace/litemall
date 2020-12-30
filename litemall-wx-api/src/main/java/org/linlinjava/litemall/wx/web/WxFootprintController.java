@@ -1,12 +1,13 @@
 package org.linlinjava.litemall.wx.web;
 
-import com.github.pagehelper.PageInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.core.util.ArrayUtil;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.domain.LitemallFootprint;
 import org.linlinjava.litemall.db.domain.LitemallGoods;
+import org.linlinjava.litemall.db.service.LitemallCollectService;
 import org.linlinjava.litemall.db.service.LitemallFootprintService;
 import org.linlinjava.litemall.db.service.LitemallGoodsService;
 import org.linlinjava.litemall.wx.annotation.LoginUser;
@@ -33,6 +34,8 @@ public class WxFootprintController {
     private LitemallFootprintService footprintService;
     @Autowired
     private LitemallGoodsService goodsService;
+    @Autowired
+    private LitemallCollectService collectService;
 
     /**
      * 删除用户足迹
@@ -51,19 +54,22 @@ public class WxFootprintController {
         }
 
         Integer footprintId = JacksonUtil.parseInteger(body, "id");
+        String addTime = JacksonUtil.parseString(body, "addTime");
         if (footprintId == null) {
             return ResponseUtil.badArgument();
         }
-        LitemallFootprint footprint = footprintService.findById(userId, footprintId);
+        List<LitemallFootprint> footprintList = footprintService.findByGoodId(userId, footprintId, addTime);
 
-        if (footprint == null) {
+        if (ArrayUtil.isListEmpty(footprintList)) {
             return ResponseUtil.badArgumentValue();
         }
-        if (!footprint.getUserId().equals(userId)) {
-            return ResponseUtil.badArgumentValue();
+        for (LitemallFootprint footprint : footprintList) {
+            if (!footprint.getUserId().equals(userId)) {
+                return ResponseUtil.badArgumentValue();
+            }
+            footprintService.deleteById(footprint.getId());
         }
 
-        footprintService.deleteById(footprintId);
         return ResponseUtil.ok();
     }
 
@@ -96,6 +102,10 @@ public class WxFootprintController {
             c.put("brief", goods.getBrief());
             c.put("picUrl", goods.getPicUrl());
             c.put("retailPrice", goods.getRetailPrice());
+
+            //查询是否已收藏
+            int count = collectService.count(userId, footprint.getGoodsId());
+            c.put("userHasCollect", count);
 
             footprintVoList.add(c);
         }

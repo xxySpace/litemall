@@ -431,7 +431,21 @@ export function feedbackAdd(data) {
 }
 
 const FootprintList='wx/footprint/list'; //足迹列表
+export function footprintList(query) {
+  return request({
+    url: FootprintList,
+    method: 'get',
+    params: query
+  })
+}
 const FootprintDelete='wx/footprint/delete'; //删除足迹
+export function footprintDelete(data) {
+  return request({
+    url: FootprintDelete,
+    method: 'post',
+    data
+  })
+}
 
 const GrouponList='wx/groupon/list'; //团购列表
 export function grouponList(query) {
