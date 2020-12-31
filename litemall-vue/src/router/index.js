@@ -11,6 +11,12 @@ import store from '../store/index';
 
 Vue.use(Router);
 
+const originalPush = Router.prototype.push;
+Router.prototype.push = function push(location, onResolve, onReject) {
+	if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+	return originalPush.call(this, location).catch(err => err)
+};
+
 const RouterModel = new Router({
   routes: [...home, ...items, ...user, ...order, ...login]
 });
