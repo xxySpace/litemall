@@ -26,9 +26,9 @@
       </van-col>
       <van-col span="6">
         <div class="order_status_icon" @click="$router.push({path: '/user/order/list/4'})">
-          <van-icon name="shouhouguanli" :info="order.uncomment > 0 ? order.uncomment : ''"/>
+          <van-icon name="xiaoxi" :info="order.uncomment > 0 ? order.uncomment : ''"/>
         </div>
-        <div>已完成</div>
+        <div>待评价</div>
       </van-col>
     </van-row>
   </div>

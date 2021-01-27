@@ -167,7 +167,8 @@ const statusMap = {
   203: '已退款',
   301: '已发货',
   401: '用户收货',
-  402: '系统收货'
+  402: '系统收货',
+  403: '已完成'
 }
 
 export default {
@@ -192,7 +193,7 @@ export default {
         orderStatusArray: [],
         sort: 'add_time',
         order: 'desc',
-        orderId:undefined
+        orderId: undefined
       },
       pickerOptions: {
         shortcuts: [{
@@ -258,12 +259,12 @@ export default {
         this.listQuery.start = null
         this.listQuery.end = null
       }
-      if(this.listQuery.orderId){
+      if (this.listQuery.orderId) {
         detailOrder(this.listQuery.orderId).then(response => {
-          this.list = [];
-          if(response.data.data.order){
-            this.list.push(response.data.data.order);
-            this.total = 1;
+          this.list = []
+          if (response.data.data.order) {
+            this.list.push(response.data.data.order)
+            this.total = 1
             this.listLoading = false
           }
         }).catch(() => {
@@ -271,7 +272,7 @@ export default {
           this.total = 0
           this.listLoading = false
         })
-      }else{
+      } else {
         listOrder(this.listQuery).then(response => {
           this.list = response.data.data.list
           this.total = response.data.data.total

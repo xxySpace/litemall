@@ -18,6 +18,7 @@ import java.util.List;
  * 当301商家已发货时，此时用户可以有确认收货
  * 当401用户确认收货以后，此时用户可以进行的操作是退货、删除、去评价或者再次购买
  * 当402系统自动确认收货以后，此时用户可以删除、去评价、或者再次购买
+ * 当403用户评价完后，此时用户可以删除订单，申请售后，或者再次购买
  */
 public class OrderUtil {
 
@@ -31,6 +32,7 @@ public class OrderUtil {
     public static final Short STATUS_REFUND = 202;
     public static final Short STATUS_REFUND_CONFIRM = 203;
     public static final Short STATUS_AUTO_CONFIRM = 402;
+    public static final Short STATUS_COMMENTED = 403;
 
     public static String orderStatusText(LitemallOrder order) {
         int status = order.getOrderStatus().intValue();
@@ -75,6 +77,10 @@ public class OrderUtil {
             return "已收货(系统)";
         }
 
+        if (status == 403) {
+            return "已完成";
+        }
+
         throw new IllegalStateException("orderStatus不支持");
     }
 
@@ -108,6 +114,11 @@ public class OrderUtil {
             handleOption.setComment(true);
             handleOption.setRebuy(true);
             handleOption.setAftersale(true);
+        } else if (status == 403) {
+            // 如果用户已评价（已完成），则可删除、申请售后和再次购买
+            handleOption.setDelete(true);
+            handleOption.setRebuy(true);
+            handleOption.setAftersale(true);
         } else {
             throw new IllegalStateException("status不支持");
         }
@@ -137,6 +148,9 @@ public class OrderUtil {
             status.add((short) 401);
 //            系统超时自动取消，此时应该不支持评价
 //            status.add((short)402);
+        } else if (showType.equals(5)) {
+            // 已评价订单
+            status.add((short) 403);
         } else {
             return null;
         }

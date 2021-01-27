@@ -17,6 +17,7 @@ import org.linlinjava.litemall.core.express.dao.ExpressInfo;
 import org.linlinjava.litemall.core.notify.NotifyService;
 import org.linlinjava.litemall.core.notify.NotifyType;
 import org.linlinjava.litemall.core.qcode.QCodeService;
+import org.linlinjava.litemall.core.storage.StorageService;
 import org.linlinjava.litemall.core.system.SystemConfig;
 import org.linlinjava.litemall.core.task.TaskService;
 import org.linlinjava.litemall.core.util.DateTimeUtil;
@@ -29,6 +30,7 @@ import org.linlinjava.litemall.db.util.GrouponConstant;
 import org.linlinjava.litemall.db.util.OrderHandleOption;
 import org.linlinjava.litemall.db.util.OrderUtil;
 import org.linlinjava.litemall.core.util.IpUtil;
+import org.linlinjava.litemall.wx.dto.CommentInfo;
 import org.linlinjava.litemall.wx.task.OrderUnpaidTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,7 @@ import static org.linlinjava.litemall.wx.util.WxResponseCode.*;
  * 当301商家已发货时，此时用户可以有确认收货的操作
  * 当401用户确认收货以后，此时用户可以进行的操作是删除订单，评价商品，申请售后，或者再次购买
  * 当402系统自动确认收货以后，此时用户可以删除订单，评价商品，申请售后，或者再次购买
+ * 当403用户评价完后，此时用户可以删除订单，申请售后，或者再次购买
  */
 @Service
 public class WxOrderService {
@@ -109,6 +111,8 @@ public class WxOrderService {
     private TaskService taskService;
     @Autowired
     private LitemallAftersaleService aftersaleService;
+    @Autowired
+    private StorageService storageService;
 
     /**
      * 订单列表
@@ -950,75 +954,79 @@ public class WxOrderService {
      * 确认商品收货或者系统自动确认商品收货后7天内可以评价，过期不能评价。
      *
      * @param userId 用户ID
-     * @param body   订单信息，{ orderId：xxx }
+     * @param commentInfos   订单信息
      * @return 订单操作结果
      */
-    public Object comment(Integer userId, String body) {
+    public Object comment(Integer userId, List<CommentInfo> commentInfos) {
         if (userId == null) {
             return ResponseUtil.unlogin();
         }
 
-        Integer orderGoodsId = JacksonUtil.parseInteger(body, "orderGoodsId");
-        if (orderGoodsId == null) {
-            return ResponseUtil.badArgument();
-        }
-        LitemallOrderGoods orderGoods = orderGoodsService.findById(orderGoodsId);
-        if (orderGoods == null) {
-            return ResponseUtil.badArgumentValue();
-        }
-        Integer orderId = orderGoods.getOrderId();
-        LitemallOrder order = orderService.findById(userId, orderId);
-        if (order == null) {
-            return ResponseUtil.badArgumentValue();
-        }
-        Short orderStatus = order.getOrderStatus();
-        if (!OrderUtil.isConfirmStatus(order) && !OrderUtil.isAutoConfirmStatus(order)) {
-            return ResponseUtil.fail(ORDER_INVALID_OPERATION, "当前商品不能评价");
-        }
-        if (!order.getUserId().equals(userId)) {
-            return ResponseUtil.fail(ORDER_INVALID, "当前商品不属于用户");
-        }
-        Integer commentId = orderGoods.getComment();
-        if (commentId == -1) {
-            return ResponseUtil.fail(ORDER_COMMENT_EXPIRED, "当前商品评价时间已经过期");
-        }
-        if (commentId != 0) {
-            return ResponseUtil.fail(ORDER_COMMENTED, "订单商品已评价");
-        }
+        for (CommentInfo commentInfo : commentInfos) {
+            Integer orderGoodsId = commentInfo.getOrderGoodsId();
+            if (orderGoodsId == null) {
+                return ResponseUtil.badArgument();
+            }
+            LitemallOrderGoods orderGoods = orderGoodsService.findById(orderGoodsId);
+            if (orderGoods == null) {
+                return ResponseUtil.badArgumentValue();
+            }
+            Integer orderId = orderGoods.getOrderId();
+            LitemallOrder order = orderService.findById(userId, orderId);
+            if (order == null) {
+                return ResponseUtil.badArgumentValue();
+            }
+            Short orderStatus = order.getOrderStatus();
+            if (!OrderUtil.isConfirmStatus(order) && !OrderUtil.isAutoConfirmStatus(order)) {
+                return ResponseUtil.fail(ORDER_INVALID_OPERATION, "当前商品不能评价");
+            }
+            if (!order.getUserId().equals(userId)) {
+                return ResponseUtil.fail(ORDER_INVALID, "当前商品不属于用户");
+            }
+            Integer commentId = orderGoods.getComment();
+            if (commentId == -1) {
+                return ResponseUtil.fail(ORDER_COMMENT_EXPIRED, "当前商品评价时间已经过期");
+            }
+            if (commentId != 0) {
+                return ResponseUtil.fail(ORDER_COMMENTED, "订单商品已评价");
+            }
 
-        String content = JacksonUtil.parseString(body, "content");
-        Integer star = JacksonUtil.parseInteger(body, "star");
-        if (star == null || star < 0 || star > 5) {
-            return ResponseUtil.badArgumentValue();
-        }
-        Boolean hasPicture = JacksonUtil.parseBoolean(body, "hasPicture");
-        List<String> picUrls = JacksonUtil.parseStringList(body, "picUrls");
-        if (hasPicture == null || !hasPicture) {
-            picUrls = new ArrayList<>(0);
-        }
+            String content = commentInfo.getContent();
+            Integer star = commentInfo.getStar();
+            if (star == null || star < 0 || star > 5) {
+                return ResponseUtil.badArgumentValue();
+            }
+            Boolean hasPicture = commentInfo.getHasPicture();
+            List<String> picUrls = commentInfo.getPicUrls();
+            if (hasPicture == null || !hasPicture) {
+                picUrls = new ArrayList<>(0);
+            }
 
-        // 1. 创建评价
-        LitemallComment comment = new LitemallComment();
-        comment.setUserId(userId);
-        comment.setType((byte) 0);
-        comment.setValueId(orderGoods.getGoodsId());
-        comment.setStar(star.shortValue());
-        comment.setContent(content);
-        comment.setHasPicture(hasPicture);
-        comment.setPicUrls(picUrls.toArray(new String[]{}));
-        commentService.save(comment);
+            // 1. 创建评价
+            LitemallComment comment = new LitemallComment();
+            comment.setUserId(userId);
+            comment.setType((byte) 0);
+            comment.setValueId(orderGoods.getGoodsId());
+            comment.setStar(star.shortValue());
+            comment.setContent(content);
+            comment.setHasPicture(hasPicture);
+            comment.setPicUrls(picUrls.toArray(new String[]{}));
+            commentService.save(comment);
 
-        // 2. 更新订单商品的评价列表
-        orderGoods.setComment(comment.getId());
-        orderGoodsService.updateById(orderGoods);
+            // 2. 更新订单商品的评价列表
+            orderGoods.setComment(comment.getId());
+            orderGoodsService.updateById(orderGoods);
 
-        // 3. 更新订单中未评价的订单商品可评价数量
-        Short commentCount = order.getComments();
-        if (commentCount > 0) {
-            commentCount--;
+            // 3. 更新订单中未评价的订单商品可评价数量
+            Short commentCount = order.getComments();
+            if (commentCount > 0) {
+                commentCount--;
+            } else {
+                order.setOrderStatus(OrderUtil.STATUS_COMMENTED);
+            }
+            order.setComments(commentCount);
+            orderService.updateWithOptimisticLocker(order);
         }
-        order.setComments(commentCount);
-        orderService.updateWithOptimisticLocker(order);
 
         return ResponseUtil.ok();
     }

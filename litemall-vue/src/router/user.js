@@ -6,6 +6,7 @@ const UserAddressEdit = () => import('@/views/user/module-address-edit');
 const UserServer = () => import('@/views/user/module-server');
 const UserHelp = () => import('@/views/user/module-help');
 const UserFeedback = () => import('@/views/user/module-feedback');
+const UserComment = () => import('@/views/user/module-comment');
 
 const UserInformation = () => import('@/views/user/user-information-set');
 const UserInfo_SetMobile = () => import('@/views/user/user-information-set/set-mobile');
@@ -80,6 +81,14 @@ export default [
     name: 'user-feedback',
     component: UserFeedback
   },  
+  {
+    path: '/user/comment',
+    name: 'user-comment',
+    meta: {
+      showHeader: false
+    },
+    component: UserComment
+  }, 
   {
     path: '/user/information',
     name: 'user-information',

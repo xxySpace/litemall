@@ -419,7 +419,21 @@ export function orderConfirm(data) {
   })
 }
 const OrderGoods='wx/order/goods'; // 代评价商品信息
+export function orderGoods(data) {
+  return request({
+    url: OrderGoods,
+    method: 'get',
+    params: data
+  })
+}
 const OrderComment='wx/order/comment'; // 评价订单商品信息
+export function orderComment(data) {
+  return request({
+    url: OrderComment,
+    method: 'post',
+    data
+  })
+}
 
 const FeedbackAdd='wx/feedback/submit'; //添加反馈
 export function feedbackAdd(data) {

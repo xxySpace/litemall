@@ -143,7 +143,7 @@ public class WxCommentController {
         List<Map<String, Object>> commentVoList = new ArrayList<>(commentList.size());
         for (LitemallComment comment : commentList) {
             Map<String, Object> commentVo = new HashMap<>();
-            commentVo.put("addTime", calcDate(comment.getAddTime()));
+            commentVo.put("addTime", comment.getAddTime());
             commentVo.put("content", comment.getContent());
             commentVo.put("adminContent", comment.getAdminContent());
             commentVo.put("picList", comment.getPicUrls());
@@ -164,16 +164,4 @@ public class WxCommentController {
         return ResponseUtil.okList(commentVoList, commentList);
     }
 
-    private String calcDate(LocalDateTime time) {
-        String result;
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        Duration dur = Duration.between(time, LocalDateTime.now());
-        long days = dur.toDays();
-        if (days > 30L) {
-            result = time.format(df);
-        } else {
-            result = days + "天前";
-        }
-        return result;
-    }
 }

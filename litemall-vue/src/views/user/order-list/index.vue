@@ -1,7 +1,7 @@
 <template>
   <div class="order_list">
     <van-tabs v-model="activeIndex"
-              :swipe-threshold="5"
+              :swipe-threshold="6"
               @click="handleTabClick">
       <van-tab v-for="(tabTitle, index) in tabTitles"
                :title="tabTitle"
@@ -88,7 +88,7 @@ export default {
   data() {
     return {
       activeIndex: Number(this.active),
-      tabTitles: ['全部', '待付款', '待发货', '待收货', '待评价'],
+      tabTitles: ['全部', '待付款', '待发货', '待收货', '待评价', '已完成'],
       orderList: [],
       page: 0,
       limit: 10,
@@ -162,7 +162,9 @@ export default {
         })
         .catch(() => {});
     },
-    commentOrder(id) {},
+    commentOrder(id) {
+      this.$router.push({ name: 'user-comment', params: { orderId: id } });
+    },
     toPay(id) {
       this.$router.push({ name: 'payment', params: { orderId: id } });
     },

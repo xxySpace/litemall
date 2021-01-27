@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.wx.annotation.LoginUser;
+import org.linlinjava.litemall.wx.dto.CommentInfo;
 import org.linlinjava.litemall.wx.service.WxOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/wx/order")
@@ -186,12 +188,12 @@ public class WxOrderController {
      * 评价订单商品
      *
      * @param userId 用户ID
-     * @param body   订单信息，{ orderId：xxx }
+     * @param commentInfos   订单信息
      * @return 订单操作结果
      */
     @PostMapping("comment")
-    public Object comment(@LoginUser Integer userId, @RequestBody String body) {
-        return wxOrderService.comment(userId, body);
+    public Object comment(@LoginUser Integer userId, @RequestBody List<CommentInfo> commentInfos) {
+        return wxOrderService.comment(userId, commentInfos);
     }
 
 }

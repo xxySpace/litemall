@@ -83,9 +83,29 @@
                     <div class="username">
                       <p class="tip">
                         {{item.userInfo.nickName}}
-                          <van-rate v-model="item.star" color="#ff0033" v-if="item.userInfo.userLevel ===0" icon="aixin1"  void-icon="aixin1" />
-                          <van-rate v-model="item.star" color="#33ccff" v-if="item.userInfo.userLevel ===1" icon="zuanshi1" void-icon="zuanshi1" />
-                          <van-rate v-model="item.star" v-if="item.userInfo.userLevel ===2" icon="V" void-icon="V" />
+                        <van-rate
+                          v-model="item.star"
+                          color="#ff0033"
+                          v-if="item.userInfo.userLevel ===0"
+                          icon="aixin1"
+                          void-icon="aixin1"
+                          readonly
+                        />
+                        <van-rate
+                          v-model="item.star"
+                          color="#33ccff"
+                          v-if="item.userInfo.userLevel ===1"
+                          icon="zuanshi1"
+                          void-icon="zuanshi1"
+                          readonly
+                        />
+                        <van-rate
+                          v-model="item.star"
+                          v-if="item.userInfo.userLevel ===2"
+                          icon="V"
+                          void-icon="V"
+                          readonly
+                        />
                       </p>
                       <p class="mt5">{{item.addTime}} | {{item.specifications}}</p>
                     </div>
@@ -96,8 +116,8 @@
               <div class="gallery">
                 <p class="mt10">{{item.content}}</p>
                 <div v-if="item.hasPic !=0">
-                  <div class="img_box" v-for='(image,index) of item.picList' :key='index'>
-                    <img class="groupPic" :src="image" alt="" @click="getImg(index,item.picList)">
+                  <div class="img_box" v-for="(image,index) of item.picList" :key="index">
+                    <img class="groupPic" :src="image" alt @click="getImg(index,item.picList)" />
                   </div>
                 </div>
                 <div style="clear:both;"></div>
@@ -570,11 +590,44 @@ export default {
         page: this.page,
         limit: this.limit
       }).then(res => {
-        this.commentsDetail.push(...res.data.data.list);
+        let list = res.data.data.list;
+        list.forEach(element => {
+          element.addTime = this.formatTime(element.addTime);
+        });
+        this.commentsDetail.push(...list);
         this.loading = false;
         this.finished = res.data.data.page >= res.data.data.pages;
       });
     },
+    formatTime(time) {
+      const date = new Date(time);
+      const d = date.getTime();
+      const now = Date.now();
+
+      const diff = (now - d) / 1000;
+      if (diff < 30) {
+        return '刚刚';
+      } else if (diff < 3600) {
+        // less 1 hour
+        return Math.ceil(diff / 60) + '分钟前';
+      } else if (diff < 3600 * 24) {
+        return Math.ceil(diff / 3600) + '小时前';
+      } else if (diff < 3600 * 24 * 2) {
+        return '1天前';
+      }
+      return (
+        date.getMonth() +
+        1 +
+        '月' +
+        date.getDate() +
+        '日' +
+        date.getHours() +
+        '时' +
+        date.getMinutes() +
+        '分'
+      );
+    },
+
     dump(id) {
       this.navActive = 0; //切换到宝贝页面
       this.initData(id); //传商品id
@@ -584,16 +637,16 @@ export default {
         this.relateds = res.data.data.list;
       });
     },
-    getImg(index,image){
+    getImg(index, image) {
       ImagePreview({
-          images: image, // 预览图片的那个数组
-          showIndex:true,
-          loop:false,
-          startPosition:index, // 指明预览第几张图
-          closeable: true,
-          closeOnPopstate: true
-      })
-    },
+        images: image, // 预览图片的那个数组
+        showIndex: true,
+        loop: false,
+        startPosition: index, // 指明预览第几张图
+        closeable: true,
+        closeOnPopstate: true
+      });
+    }
   },
 
   components: {
